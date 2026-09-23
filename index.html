@@ -286,7 +286,7 @@
       renderList();
       $titleText.textContent = "메모장";
       $skLeft.textContent = "▲▼ 이동";
-      $skMid.textContent = "1 선택";
+      $skMid.textContent = "1 선택 / 0 새글";
       $skRight.textContent = "◀▶ 페이지";
     } else if(state.mode === "detail"){
       $screenDetail.classList.add("active");
@@ -484,6 +484,8 @@
       }
     } else if(key === "1"){
       openSelectedNote();
+    } else if(key === "0"){
+      startNewNote();
     }
   }
 
@@ -504,7 +506,7 @@
 
   document.addEventListener("keydown", function(e){
     var key = e.key;
-    var navKeys = ["ArrowUp","ArrowDown","ArrowLeft","ArrowRight","1","2","3","Backspace","Escape"];
+    var navKeys = ["ArrowUp","ArrowDown","ArrowLeft","ArrowRight","0","1","2","3","Backspace","Escape"];
 
     if(state.mode === "write"){
       // 뒤로가기: Backspace(빈 textarea일 때 브라우저 뒤로가기 방지) or Escape as "back"
