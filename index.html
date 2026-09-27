@@ -431,7 +431,7 @@
     var start = state.page * PAGE_SIZE;
     var pageNotes = notes.slice(start, start + PAGE_SIZE);
 
-    $pageIndicator.textContent = notes.length ? ((state.page+1)+" / "+tp) : "";
+    $pageIndicator.textContent = "";
     $btnPrev.disabled = state.page <= 0;
     $btnNext.disabled = state.page >= tp - 1;
 
