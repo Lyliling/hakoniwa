@@ -99,6 +99,18 @@
     font-family:inherit;
   }
 
+  .charcount{
+    position:absolute;
+    right:16px;
+    bottom:72px;
+    font-size:var(--fs-small);
+    color:var(--sub);
+    z-index:10;
+    pointer-events:none;
+    background:var(--bg);
+    padding:2px 6px;
+  }
+
   /* TOOLBAR (button row, replaces keypad shortcuts) */
   #toolbar{
     flex:0 0 auto;
@@ -225,6 +237,7 @@
         <span id="detail-date"></span>
         <span id="detail-body"></span>
       </div>
+      <div id="detail-charcount" class="charcount">0자</div>
       <div id="toolbar">
         <button id="btn-edit">편집</button>
         <button id="btn-tolist">목록</button>
@@ -235,6 +248,7 @@
     <!-- WRITE SCREEN -->
     <div class="screen" id="screen-write">
       <textarea id="write-textarea" placeholder="메모를 입력하세요..."></textarea>
+      <div id="write-charcount" class="charcount">0자</div>
       <div id="toolbar">
         <button id="btn-save">저장</button>
       </div>
@@ -356,6 +370,8 @@
   var $detailBody = document.getElementById("detail-body");
   var $detailDate = document.getElementById("detail-date");
   var $textarea = document.getElementById("write-textarea");
+  var $writeCharcount = document.getElementById("write-charcount");
+  var $detailCharcount = document.getElementById("detail-charcount");
   var $confirmModal = document.getElementById("confirm-modal");
   var $settingsModal = document.getElementById("settings-modal");
   var $newbtn = document.getElementById("newbtn");
@@ -375,6 +391,18 @@
     var d = new Date(ts);
     function p(n){ return (n<10?"0":"")+n; }
     return d.getFullYear()+"."+p(d.getMonth()+1)+"."+p(d.getDate())+" "+p(d.getHours())+":"+p(d.getMinutes());
+  }
+
+  // 글자수 계산: 공백류, 마침표, 큰따옴표, 작은따옴표, 느낌표, 물음표 제외
+  function countChars(text){
+    if(!text) return 0;
+    return text.replace(/[\s.'"!?]/g, "").length;
+  }
+  function updateWriteCharcount(){
+    $writeCharcount.textContent = countChars($textarea.value) + "자";
+  }
+  function updateDetailCharcount(text){
+    $detailCharcount.textContent = countChars(text) + "자";
   }
 
   // ---------- render ----------
@@ -435,6 +463,7 @@
     if(!note){ goToList(); return; }
     $detailDate.textContent = fmtDate(note.updatedAt);
     $detailBody.textContent = note.text || "";
+    updateDetailCharcount(note.text || "");
   }
 
   // ---------- actions ----------
@@ -452,6 +481,7 @@
     $textarea.value = note.text || "";
     state.mode = "write";
     render();
+    updateWriteCharcount();
     setTimeout(function(){ $textarea.focus(); }, 0);
   }
 
@@ -460,6 +490,7 @@
     $textarea.value = "";
     state.mode = "write";
     render();
+    updateWriteCharcount();
     setTimeout(function(){ $textarea.focus(); }, 0);
   }
 
@@ -510,6 +541,7 @@
   $btnSave.addEventListener("click", saveAndExitWrite);
   $confirmYes.addEventListener("click", confirmDeleteYes);
   $confirmNo.addEventListener("click", closeConfirm);
+  $textarea.addEventListener("input", updateWriteCharcount);
 
   // settings modal
   $settingsBtn.addEventListener("click", function(){
