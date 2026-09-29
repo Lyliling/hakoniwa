@@ -420,6 +420,8 @@
     } else if(state.mode === "write"){
       $screenWrite.classList.add("active");
     }
+
+    $settingsBtn.style.display = (state.mode === "write") ? "none" : "flex";
   }
 
   function renderList(){
