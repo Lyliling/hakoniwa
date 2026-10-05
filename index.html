@@ -606,15 +606,11 @@
 
   // Escape key also saves from write mode (desktop convenience)
   document.addEventListener("keydown", function(e){
-    if((e.ctrlKey || e.metaKey) && (e.key === "s" || e.key === "S" || e.key === "ㄴ")){
-      e.preventDefault(); // 브라우저 '페이지 저장' 창 방지
+    var isCtrlS = (e.ctrlKey || e.metaKey) && (e.key === "s" || e.key === "S" || e.key === "ㄴ");
+    // Esc는 Ctrl+S와 완전히 같은 기능만 수행 (기존 Esc 동작은 모두 제거)
+    if(isCtrlS || e.key === "Escape"){
+      e.preventDefault(); // Ctrl+S: 브라우저 '페이지 저장' 창 방지
       if(state.mode === "write"){ saveToDetail(); }
-      return;
-    }
-    if(e.key === "Escape"){
-      if(state.settingsOpen){ $settingsClose.click(); return; }
-      if(state.confirmOpen){ closeConfirm(); return; }
-      if(state.mode === "write"){ saveAndExitWrite(); }
     }
   });
 
@@ -628,18 +624,70 @@
   window.addEventListener("orientationchange", function(){ setTimeout(fitScreen, 100); });
   if(window.visualViewport){ window.visualViewport.addEventListener("resize", fitScreen); }
 
-  // ---------- double-tap/double-click on margin toggles fullscreen ----------
+  // ---------- fullscreen: 여백 더블탭/더블클릭으로만 켜고 끔 ----------
+  // Esc 등으로 의도치 않게 풀려도 다음 터치/클릭/키 입력 때 자동으로 다시 전체화면 복귀
   var $outer = document.getElementById("phone-outer");
+  var wantFullscreen = false;   // 사용자가 전체화면을 "원하는" 상태인지
+
+  function fsElement(){ return document.fullscreenElement || document.webkitFullscreenElement; }
+
+  function lockEscKey(){
+    // Chrome/Edge: 전체화면 중 Esc 키를 브라우저가 가로채지 않게 잠금
+    try{
+      if(navigator.keyboard && navigator.keyboard.lock){
+        navigator.keyboard.lock(["Escape"]).catch(function(){});
+      }
+    }catch(e){}
+  }
+  function unlockEscKey(){
+    try{ if(navigator.keyboard && navigator.keyboard.unlock){ navigator.keyboard.unlock(); } }catch(e){}
+  }
+
+  function enterFullscreen(){
+    var el = document.documentElement;
+    var r;
+    try{
+      if(el.requestFullscreen){ r = el.requestFullscreen({ navigationUI:"hide" }); }
+      else if(el.webkitRequestFullscreen){ r = el.webkitRequestFullscreen(); }
+    }catch(e){}
+    if(r && r.then){ r.then(lockEscKey).catch(function(){}); }
+    else { lockEscKey(); }
+  }
+  function exitFullscreen(){
+    unlockEscKey();
+    if(document.exitFullscreen){ document.exitFullscreen().catch(function(){}); }
+    else if(document.webkitExitFullscreen){ document.webkitExitFullscreen(); }
+  }
+
   function toggleFullscreen(){
-    if(!document.fullscreenElement){
-      var el = document.documentElement;
-      if(el.requestFullscreen){ el.requestFullscreen().catch(function(){}); }
-      else if(el.webkitRequestFullscreen){ el.webkitRequestFullscreen(); }
+    if(wantFullscreen){
+      wantFullscreen = false;
+      if(fsElement()){ exitFullscreen(); }
     } else {
-      if(document.exitFullscreen){ document.exitFullscreen().catch(function(){}); }
-      else if(document.webkitExitFullscreen){ document.webkitExitFullscreen(); }
+      wantFullscreen = true;
+      enterFullscreen();
     }
   }
+
+  function onFsChange(){
+    if(fsElement()){ lockEscKey(); }
+    // 풀렸는데 사용자가 끈 게 아니면(wantFullscreen 유지) → 다음 입력 때 자동 복귀
+  }
+  document.addEventListener("fullscreenchange", onFsChange);
+  document.addEventListener("webkitfullscreenchange", onFsChange);
+
+  // 전체화면 요청은 사용자 입력(터치/클릭/Esc 외 키) 안에서만 허용되므로,
+  // 풀린 뒤 첫 입력에서 바로 다시 요청한다.
+  function reenterIfNeeded(e){
+    if(wantFullscreen && !fsElement()){
+      if(e && e.type === "keydown" && e.key === "Escape") return; // Esc는 사용자 활성화로 인정 안 됨
+      enterFullscreen();
+    }
+  }
+  ["pointerdown","touchend","click","keydown"].forEach(function(t){
+    document.addEventListener(t, reenterIfNeeded, true);
+  });
+
   document.body.addEventListener("dblclick", function(e){
     if(e.target.closest(".item") || e.target.closest("button") || e.target.closest("textarea")) return;
     toggleFullscreen();
