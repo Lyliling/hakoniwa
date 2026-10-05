@@ -99,6 +99,17 @@
     font-family:inherit;
   }
 
+  /* 스크롤바는 숨기고 휠/터치 스크롤은 그대로 유지 */
+  #list-items, #detail, #write-textarea{
+    scrollbar-width:none;
+    -ms-overflow-style:none;
+  }
+  #list-items::-webkit-scrollbar,
+  #detail::-webkit-scrollbar,
+  #write-textarea::-webkit-scrollbar{
+    display:none; width:0; height:0;
+  }
+
   .charcount{
     position:absolute;
     right:16px;
@@ -523,6 +534,26 @@
     render();
   }
 
+  // Ctrl+S: 저장하고 상세보기 화면으로 이동 (새 글도 저장 후 해당 글 상세보기로)
+  function saveToDetail(){
+    var text = $textarea.value;
+    if(text.trim().length === 0){ saveAndExitWrite(); return; }
+
+    if(state.editingNoteId){
+      var note = state.notes.find(function(n){ return n.id === state.editingNoteId; });
+      if(note){ note.text = text; note.updatedAt = Date.now(); }
+      state.currentNoteId = state.editingNoteId;
+    } else {
+      var id = "n" + Date.now() + Math.random().toString(36).slice(2,7);
+      state.notes.push({ id:id, text:text, updatedAt: Date.now() });
+      state.currentNoteId = id;
+    }
+    saveNotes();
+    state.editingNoteId = null;
+    state.mode = "detail";
+    render();
+  }
+
   function openConfirmDelete(){ state.confirmOpen = true; $confirmModal.classList.add("active"); }
   function closeConfirm(){ state.confirmOpen = false; $confirmModal.classList.remove("active"); }
   function confirmDeleteYes(){
@@ -575,6 +606,11 @@
 
   // Escape key also saves from write mode (desktop convenience)
   document.addEventListener("keydown", function(e){
+    if((e.ctrlKey || e.metaKey) && (e.key === "s" || e.key === "S" || e.key === "ㄴ")){
+      e.preventDefault(); // 브라우저 '페이지 저장' 창 방지
+      if(state.mode === "write"){ saveToDetail(); }
+      return;
+    }
     if(e.key === "Escape"){
       if(state.settingsOpen){ $settingsClose.click(); return; }
       if(state.confirmOpen){ closeConfirm(); return; }
@@ -614,11 +650,6 @@
     var now = Date.now();
     if(now - lastTap < 350){ toggleFullscreen(); e.preventDefault(); }
     lastTap = now;
-  });
-  document.addEventListener("keydown", function(e){
-    if(e.key === "+" || e.key === "="){
-      toggleFullscreen();
-    }
   });
 
   // ---------- init ----------
