@@ -208,19 +208,6 @@
     font-family:inherit; cursor:pointer;
   }
 
-  #newbtn{
-    position:absolute;
-    right:16px; bottom:80px;
-    width:52px; height:52px;
-    border-radius:50%;
-    border:1px solid var(--fg);
-    display:flex; align-items:center; justify-content:center;
-    font-size:26px;
-    background:var(--bg); color:var(--fg);
-    z-index:10;
-    cursor:pointer;
-  }
-  #newbtn:active{ background:var(--hl); color:var(--hlfg); }
 </style>
 </head>
 <body>
@@ -234,7 +221,6 @@
       <div id="page-indicator"></div>
       <div id="list-items"></div>
       <div id="empty" style="display:none;">메모가 없습니다</div>
-      <div id="newbtn">+</div>
       <div id="toolbar">
         <button id="btn-prev">◀ 이전</button>
         <button id="btn-newmemo">새 메모</button>
@@ -385,7 +371,6 @@
   var $detailCharcount = document.getElementById("detail-charcount");
   var $confirmModal = document.getElementById("confirm-modal");
   var $settingsModal = document.getElementById("settings-modal");
-  var $newbtn = document.getElementById("newbtn");
   var $btnPrev = document.getElementById("btn-prev");
   var $btnNext = document.getElementById("btn-next");
   var $btnNewMemo = document.getElementById("btn-newmemo");
@@ -564,7 +549,6 @@
   }
 
   // ---------- button bindings ----------
-  $newbtn.addEventListener("click", startNewNote);
   $btnNewMemo.addEventListener("click", startNewNote);
   $btnPrev.addEventListener("click", function(){ if(state.page>0){ state.page--; renderList(); } });
   $btnNext.addEventListener("click", function(){ if(state.page < totalPages()-1){ state.page++; renderList(); } });
