@@ -2,257 +2,134 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>메모장</title>
 <style>
-  :root{
-    --bg:#000; --fg:#fff; --sub:#888; --line:#444; --hl:#fff; --hlfg:#000;
-    --fs-base:16px; --fs-title:15px; --fs-small:12px;
-  }
-  *{box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent; user-select:none;}
-  html,body{
-    width:100%; height:100%;
-    overflow:hidden;
-    position:fixed;
-    inset:0;
-    background:#222;
-    display:flex; align-items:center; justify-content:center;
-    font-family:"Malgun Gothic","Apple SD Gothic Neo",sans-serif;
-    touch-action:none;
-    overscroll-behavior:none;
-  }
-  #phone-outer{
-    width:100%; height:100%;
-    display:flex; align-items:stretch; justify-content:stretch;
-    overflow:hidden;
-  }
-  #phone{
-    width:100%; height:100%;
-    flex:1 1 auto;
-    background:var(--bg);
-    color:var(--fg);
-    display:flex; flex-direction:column;
-    overflow:hidden;
-    position:relative;
-  }
-  #body{
-    flex:1 1 auto;
-    overflow:hidden;
-    position:relative;
-  }
-  .screen{
-    position:absolute; top:0; left:0; right:0; bottom:0;
-    display:none;
-    flex-direction:column;
-  }
-  .screen.active{ display:flex; }
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{font-size:13px;height:100%;overflow:hidden}
+body{height:100%;overflow:hidden;font-family:"Malgun Gothic","Apple SD Gothic Neo",sans-serif;-webkit-text-size-adjust:100%}
+#app{position:fixed;top:0;left:0;right:0;bottom:0;display:-webkit-flex;display:flex;-webkit-flex-direction:column;flex-direction:column;overflow:hidden}
+#body{-webkit-flex:1 1 auto;flex:1 1 auto;position:relative;overflow:hidden;min-height:0}
+.screen{position:absolute;top:0;left:0;right:0;bottom:0;display:none;-webkit-flex-direction:column;flex-direction:column}
+.screen.active{display:-webkit-flex;display:flex}
 
-  /* LIST */
-  #list-items{
-    flex:1 1 auto;
-    overflow-y:auto;
-  }
-  .item{
-    padding:18px 20px;
-    border-bottom:1px solid var(--line);
-    font-size:var(--fs-base);
-    display:flex; flex-direction:column; gap:4px;
-    cursor:pointer;
-  }
-  .item .t{
-    font-size:calc(var(--fs-base) + 2px);
-    white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
-  }
-  .item .d{
-    font-size:var(--fs-small); color:var(--sub);
-  }
-  .item:active{ background:var(--hl); color:var(--hlfg); }
-  .item:active .d{ color:#555; }
-  #empty{
-    flex:1; display:flex; align-items:center; justify-content:center;
-    color:var(--sub); font-size:var(--fs-base);
-  }
+#list-items,#detail{-webkit-flex:1 1 auto;flex:1 1 auto;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch}
+.item{padding:.6rem .8rem;cursor:pointer}
+.item .t{font-size:1.1rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.item .d{font-size:.8rem;margin-top:.15rem}
+#empty{-webkit-flex:1 1 auto;flex:1 1 auto;display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center;-webkit-justify-content:center;justify-content:center;font-size:1rem}
 
-  /* DETAIL */
-  #detail{
-    flex:1; overflow-y:auto; padding:24px; font-size:var(--fs-base); line-height:1.7;
-    display:flex; flex-direction:column;
-  }
-  #detail-date{
-    color:var(--sub); font-size:var(--fs-small);
-    display:block;
-    padding-bottom:12px;
-    margin-bottom:18px;
-    border-bottom:1px solid var(--line);
-    flex:0 0 auto;
-  }
-  #detail-body{
-    white-space:pre-wrap; word-break:break-all;
-    flex:1 1 auto;
-  }
+#detail{padding:.8rem;font-size:1rem;line-height:1.6}
+#detail-date{display:block;font-size:.8rem;padding-bottom:.5rem;margin-bottom:.7rem}
+#detail-body{display:block;white-space:pre-wrap;word-wrap:break-word;word-break:break-all}
 
-  /* WRITE */
-  #write-textarea{
-    flex:1; width:100%; background:var(--bg); color:var(--fg);
-    border:none; outline:none; resize:none;
-    padding:24px; font-size:var(--fs-base); line-height:1.7;
-    font-family:inherit;
-  }
+#write-textarea{-webkit-flex:1 1 auto;flex:1 1 auto;min-height:0;width:100%;border:none;outline:none;resize:none;padding:.8rem;font-size:1rem;line-height:1.6;font-family:inherit;border-radius:0;-webkit-appearance:none;-webkit-user-select:text;user-select:text}
+.charcount{-webkit-flex:0 0 auto;flex:0 0 auto;text-align:right;padding:.25rem .8rem;font-size:.8rem}
 
-  /* 스크롤바는 숨기고 휠/터치 스크롤은 그대로 유지 */
-  #list-items, #detail, #write-textarea{
-    scrollbar-width:none;
-    -ms-overflow-style:none;
-  }
-  #list-items::-webkit-scrollbar,
-  #detail::-webkit-scrollbar,
-  #write-textarea::-webkit-scrollbar{
-    display:none; width:0; height:0;
-  }
+.toolbar{-webkit-flex:0 0 auto;flex:0 0 auto;display:-webkit-flex;display:flex}
+.toolbar button{-webkit-flex:1 1 0;flex:1 1 0;min-width:0;border:none;padding:.7rem 0;font-size:.95rem;font-family:inherit;white-space:nowrap;border-radius:0;cursor:pointer}
+.toolbar button:last-child{border-right:none}
+.toolbar button.tb-settings{-webkit-flex:0 0 2.6rem;flex:0 0 2.6rem;font-size:1.1rem}
 
-  .charcount{
-    position:absolute;
-    right:16px;
-    bottom:72px;
-    font-size:var(--fs-small);
-    color:var(--sub);
-    z-index:10;
-    pointer-events:none;
-    background:var(--bg);
-    padding:2px 6px;
-  }
+#confirm-modal,#settings-modal{position:absolute;left:.8rem;right:.8rem;top:50%;-webkit-transform:translateY(-50%);transform:translateY(-50%);padding:1rem .8rem;display:none;z-index:20;font-size:1rem}
+#confirm-modal.active,#settings-modal.active{display:block}
+#confirm-modal .msg{margin-bottom:.9rem}
+#confirm-modal .opts{display:-webkit-flex;display:flex}
+#confirm-modal .opts button{-webkit-flex:1 1 0;flex:1 1 0;padding:.6rem 0;font-size:1rem;font-family:inherit;border-radius:0;cursor:pointer}
+#confirm-modal .opts button + button{margin-left:.6rem}
 
-  /* TOOLBAR (button row, replaces keypad shortcuts) */
-  #toolbar{
-    flex:0 0 auto;
-    display:flex;
-    border-top:1px solid var(--line);
-  }
-  #toolbar button{
-    flex:1;
-    background:var(--bg); color:var(--fg);
-    border:none; border-right:1px solid var(--line);
-    padding:16px 4px;
-    font-size:calc(var(--fs-base) - 2px);
-    font-family:inherit;
-    cursor:pointer;
-  }
-  #toolbar button:last-child{ border-right:none; }
-  #toolbar button:active{ background:var(--hl); color:var(--hlfg); }
-  #toolbar button:disabled{ color:var(--sub); }
-  #toolbar .danger:active{ background:var(--fg); }
+#settings-modal h3{font-size:1.1rem;margin-bottom:.7rem}
+.setting-row{margin-bottom:.8rem}
+.setting-row label{display:block;font-size:.8rem;margin-bottom:.3rem}
+.setting-row .choices{display:-webkit-flex;display:flex}
+.setting-row .choices button{-webkit-flex:1 1 0;flex:1 1 0;min-width:0;padding:.5rem 0;font-size:.85rem;font-family:inherit;white-space:nowrap;border-radius:0;cursor:pointer}
+.setting-row .choices button + button{margin-left:.3rem}
+#settings-close{display:block;width:100%;padding:.6rem 0;font-size:1rem;font-family:inherit;border-radius:0;cursor:pointer}
 
-  /* Floating settings button */
-  #settings-btn{
-    position:absolute;
-    top:14px; right:14px;
-    width:40px; height:40px;
-    border:1px solid var(--fg);
-    border-radius:50%;
-    background:var(--bg); color:var(--fg);
-    display:flex; align-items:center; justify-content:center;
-    font-size:18px;
-    z-index:15;
-    cursor:pointer;
-  }
-  #settings-btn:active{ background:var(--hl); color:var(--hlfg); }
+/* 스크롤바는 숨기고 터치 스크롤은 유지 */
+#list-items::-webkit-scrollbar,#detail::-webkit-scrollbar,#write-textarea::-webkit-scrollbar{display:none;width:0;height:0}
 
-  #page-indicator{
-    position:absolute;
-    top:18px; left:16px;
-    font-size:var(--fs-small);
-    color:var(--sub);
-    z-index:10;
-  }
+body,#app{background:#000;color:#fff}
+.item{border-bottom:1px solid #444}
+.item .d{color:#888}
+.item:active{background:#fff;color:#000}
+.item:active .d{color:#555}
+#empty{color:#888}
+#detail-date{color:#888;border-bottom:1px solid #444}
+#write-textarea{background:#000;color:#fff}
+.charcount{color:#888;border-top:1px solid #444}
+.toolbar{border-top:1px solid #444}
+.toolbar button{background:#000;color:#fff;border-right:1px solid #444}
+.toolbar button:active{background:#fff;color:#000}
+.toolbar button:disabled{color:#888}
+#confirm-modal,#settings-modal{background:#fff;color:#000;border:2px solid #fff}
+#confirm-modal .opts button{border:1px solid #000;background:#fff;color:#000}
+#confirm-modal .opts button.danger{background:#000;color:#fff}
+.setting-row label{color:#555}
+.setting-row .choices button{border:1px solid #000;background:#fff;color:#000}
+.setting-row .choices button.active{background:#000;color:#fff}
+#settings-close{border:1px solid #000;background:#000;color:#fff}
 
-  /* CONFIRM MODAL */
-  #confirm-modal, #settings-modal{
-    position:absolute; left:40px; right:40px; top:50%; transform:translateY(-50%);
-    background:var(--fg); color:var(--hlfg);
-    border:2px solid var(--fg);
-    padding:24px 20px;
-    display:none;
-    flex-direction:column;
-    gap:18px;
-    z-index:20;
-    font-size:var(--fs-base);
-  }
-  #confirm-modal.active, #settings-modal.active{ display:flex; }
-  #confirm-modal .opts{
-    display:flex; gap:12px;
-  }
-  #confirm-modal .opts button{
-    flex:1;
-    padding:14px;
-    font-size:var(--fs-base);
-    font-family:inherit;
-    border:1px solid var(--hlfg);
-    background:var(--fg); color:var(--hlfg);
-    cursor:pointer;
-  }
-  #confirm-modal .opts button.danger{ background:var(--hlfg); color:var(--fg); }
-
-  #settings-modal h3{ font-size:calc(var(--fs-base) + 2px); margin-bottom:4px; }
-  .setting-row{ display:flex; flex-direction:column; gap:8px; }
-  .setting-row label{ font-size:var(--fs-small); color:#555; }
-  .setting-row .choices{ display:flex; gap:8px; }
-  .setting-row .choices button{
-    flex:1; padding:10px; font-size:var(--fs-small);
-    border:1px solid var(--hlfg); background:var(--fg); color:var(--hlfg);
-    font-family:inherit; cursor:pointer;
-  }
-  .setting-row .choices button.active{ background:var(--hlfg); color:var(--fg); }
-  #settings-close{
-    margin-top:6px; padding:14px; font-size:var(--fs-base);
-    border:1px solid var(--hlfg); background:var(--hlfg); color:var(--fg);
-    font-family:inherit; cursor:pointer;
-  }
-
+html.light body,html.light #app{background:#fff;color:#000}
+html.light .item{border-bottom:1px solid #ccc}
+html.light .item .d{color:#666}
+html.light .item:active{background:#000;color:#fff}
+html.light .item:active .d{color:#999}
+html.light #empty{color:#666}
+html.light #detail-date{color:#666;border-bottom:1px solid #ccc}
+html.light #write-textarea{background:#fff;color:#000}
+html.light .charcount{color:#666;border-top:1px solid #ccc}
+html.light .toolbar{border-top:1px solid #ccc}
+html.light .toolbar button{background:#fff;color:#000;border-right:1px solid #ccc}
+html.light .toolbar button:active{background:#000;color:#fff}
+html.light .toolbar button:disabled{color:#666}
+html.light #confirm-modal,html.light #settings-modal{background:#000;color:#fff;border:2px solid #000}
+html.light #confirm-modal .opts button{border:1px solid #fff;background:#000;color:#fff}
+html.light #confirm-modal .opts button.danger{background:#fff;color:#000}
+html.light .setting-row label{color:#999}
+html.light .setting-row .choices button{border:1px solid #fff;background:#000;color:#fff}
+html.light .setting-row .choices button.active{background:#fff;color:#000}
+html.light #settings-close{border:1px solid #fff;background:#fff;color:#000}
 </style>
 </head>
 <body>
-<div id="phone-outer">
-<div id="phone">
-  <div id="settings-btn">⚙</div>
-
+<div id="app">
   <div id="body">
-    <!-- LIST SCREEN -->
     <div class="screen active" id="screen-list">
-      <div id="page-indicator"></div>
       <div id="list-items"></div>
       <div id="empty" style="display:none;">메모가 없습니다</div>
-      <div id="toolbar">
+      <div class="toolbar">
         <button id="btn-prev">◀ 이전</button>
         <button id="btn-newmemo">새 메모</button>
         <button id="btn-next">다음 ▶</button>
+        <button class="tb-settings" title="설정">⚙</button>
       </div>
     </div>
 
-    <!-- DETAIL SCREEN -->
     <div class="screen" id="screen-detail">
       <div id="detail">
         <span id="detail-date"></span>
         <span id="detail-body"></span>
       </div>
       <div id="detail-charcount" class="charcount">0자</div>
-      <div id="toolbar">
+      <div class="toolbar">
         <button id="btn-edit">편집</button>
         <button id="btn-tolist">목록</button>
-        <button id="btn-delete" class="danger">삭제</button>
+        <button id="btn-delete">삭제</button>
+        <button class="tb-settings" title="설정">⚙</button>
       </div>
     </div>
 
-    <!-- WRITE SCREEN -->
     <div class="screen" id="screen-write">
-      <textarea id="write-textarea" placeholder="메모를 입력하세요..."></textarea>
+      <textarea id="write-textarea" placeholder="메모를 입력하세요..." spellcheck="false" autocorrect="off" autocapitalize="off" autocomplete="off"></textarea>
       <div id="write-charcount" class="charcount">0자</div>
-      <div id="toolbar">
+      <div class="toolbar">
         <button id="btn-save">저장</button>
       </div>
     </div>
 
     <div id="confirm-modal">
-      <div>정말 삭제하시겠습니까?</div>
+      <div class="msg">정말 삭제하시겠습니까?</div>
       <div class="opts">
         <button class="danger" id="confirm-yes">삭제</button>
         <button id="confirm-no">취소</button>
@@ -264,445 +141,284 @@
       <div class="setting-row">
         <label>글자 크기</label>
         <div class="choices" id="fontsize-choices">
-          <button data-size="14">작게</button>
-          <button data-size="16">보통</button>
-          <button data-size="20">크게</button>
-          <button data-size="24">아주 크게</button>
+          <button data-size="11">작게</button>
+          <button data-size="13">보통</button>
+          <button data-size="15">크게</button>
+          <button data-size="18">특대</button>
         </div>
       </div>
       <div class="setting-row">
         <label>화면 색상</label>
         <div class="choices" id="theme-choices">
-          <button data-theme="dark">검정 배경</button>
-          <button data-theme="light">흰색 배경</button>
+          <button data-theme="dark">검정</button>
+          <button data-theme="light">흰색</button>
         </div>
       </div>
       <button id="settings-close">닫기</button>
     </div>
   </div>
 </div>
-</div>
 
 <script>
 (function(){
   "use strict";
 
+  // 메모 데이터는 다른 버전(PC/태블릿용 index.html)과 같은 키를 써서 같은 기기·같은 주소에서는 공유된다.
   var STORAGE_KEY = "memoapp_v1_notes";
-  var SETTINGS_KEY = "memoapp_v1_settings";
-  var PAGE_SIZE = 8;
-  var PHONE_W = 768, PHONE_H = 1024;
+  var SETTINGS_KEY = "memoapp_f2_settings";
 
-  var state = {
-    notes: [],
-    mode: "list",
-    page: 0,
-    currentNoteId: null,
-    editingNoteId: null,
-    confirmOpen: false,
-    settingsOpen: false
-  };
+  var state = { notes: [], mode: "list", page: 0, currentNoteId: null, editingNoteId: null, confirmOpen: false, settingsOpen: false };
+  var settings = { fontSize: 13, theme: "dark" };
 
-  var settings = { fontSize: 16, theme: "dark" };
+  // ---------- 구형 브라우저용 도우미 ----------
+  function each(list, fn){ for(var i = 0; i < list.length; i++){ fn(list[i], i); } }
+  function byId(id){ return document.getElementById(id); }
+  function findNote(id){
+    for(var i = 0; i < state.notes.length; i++){ if(state.notes[i].id === id) return state.notes[i]; }
+    return null;
+  }
+  function hasClass(el, c){ return (" " + el.className + " ").indexOf(" " + c + " ") > -1; }
+  function addClass(el, c){ if(!hasClass(el, c)) el.className = (el.className ? el.className + " " : "") + c; }
+  function removeClass(el, c){ el.className = (" " + el.className + " ").replace(" " + c + " ", " ").replace(/^\s+|\s+$/g, ""); }
+  function setActive(el, on){ if(on) addClass(el, "active"); else removeClass(el, "active"); }
+  function isInteractive(el){
+    while(el && el !== document.body){
+      var t = el.tagName;
+      if(t === "BUTTON" || t === "TEXTAREA" || t === "INPUT" || (el.className && hasClass(el, "item"))) return true;
+      el = el.parentNode;
+    }
+    return false;
+  }
+  function keyOf(e){
+    if(e.key) return e.key;
+    if(e.keyCode === 27) return "Escape";
+    if(e.keyCode === 83) return "s";
+    return "";
+  }
 
   // ---------- storage ----------
   function loadNotes(){
-    try{
-      var raw = localStorage.getItem(STORAGE_KEY);
-      state.notes = raw ? JSON.parse(raw) : [];
-    }catch(e){ state.notes = []; }
+    try{ var raw = localStorage.getItem(STORAGE_KEY); state.notes = raw ? JSON.parse(raw) : []; }
+    catch(e){ state.notes = []; }
   }
-  function saveNotes(){
-    try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(state.notes)); }catch(e){}
-  }
+  function saveNotes(){ try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(state.notes)); }catch(e){} }
   function loadSettings(){
     try{
       var raw = localStorage.getItem(SETTINGS_KEY);
-      if(raw){ var s = JSON.parse(raw); settings.fontSize = s.fontSize || 16; settings.theme = s.theme || "dark"; }
+      if(raw){ var s = JSON.parse(raw); settings.fontSize = s.fontSize || 13; settings.theme = s.theme || "dark"; }
     }catch(e){}
   }
-  function saveSettings(){
-    try{ localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings)); }catch(e){}
+  function saveSettings(){ try{ localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings)); }catch(e){} }
+
+  function pageSize(){
+    var f = settings.fontSize;
+    return f <= 11 ? 6 : (f <= 13 ? 5 : (f <= 15 ? 4 : 3));
   }
   function applySettings(){
-    document.documentElement.style.setProperty("--fs-base", settings.fontSize + "px");
-    if(settings.theme === "light"){
-      document.documentElement.style.setProperty("--bg", "#fff");
-      document.documentElement.style.setProperty("--fg", "#000");
-      document.documentElement.style.setProperty("--sub", "#666");
-      document.documentElement.style.setProperty("--line", "#ccc");
-      document.documentElement.style.setProperty("--hl", "#000");
-      document.documentElement.style.setProperty("--hlfg", "#fff");
-    } else {
-      document.documentElement.style.setProperty("--bg", "#000");
-      document.documentElement.style.setProperty("--fg", "#fff");
-      document.documentElement.style.setProperty("--sub", "#888");
-      document.documentElement.style.setProperty("--line", "#444");
-      document.documentElement.style.setProperty("--hl", "#fff");
-      document.documentElement.style.setProperty("--hlfg", "#000");
-    }
-    // update settings modal button active states
-    document.querySelectorAll("#fontsize-choices button").forEach(function(b){
-      b.classList.toggle("active", parseInt(b.dataset.size,10) === settings.fontSize);
+    document.documentElement.style.fontSize = settings.fontSize + "px";
+    if(settings.theme === "light") addClass(document.documentElement, "light");
+    else removeClass(document.documentElement, "light");
+    each(byId("fontsize-choices").getElementsByTagName("button"), function(b){
+      setActive(b, parseInt(b.getAttribute("data-size"), 10) === settings.fontSize);
     });
-    document.querySelectorAll("#theme-choices button").forEach(function(b){
-      b.classList.toggle("active", b.dataset.theme === settings.theme);
+    each(byId("theme-choices").getElementsByTagName("button"), function(b){
+      setActive(b, b.getAttribute("data-theme") === settings.theme);
     });
   }
 
-  function sortedNotes(){
-    return state.notes.slice().sort(function(a,b){ return b.updatedAt - a.updatedAt; });
-  }
-  function totalPages(){
-    var n = state.notes.length;
-    return Math.max(1, Math.ceil(n / PAGE_SIZE));
-  }
+  function sortedNotes(){ return state.notes.slice().sort(function(a, b){ return b.updatedAt - a.updatedAt; }); }
+  function totalPages(){ return Math.max(1, Math.ceil(state.notes.length / pageSize())); }
 
   // ---------- DOM refs ----------
-  var $list = document.getElementById("list-items");
-  var $empty = document.getElementById("empty");
-  var $pageIndicator = document.getElementById("page-indicator");
-  var $screenList = document.getElementById("screen-list");
-  var $screenDetail = document.getElementById("screen-detail");
-  var $screenWrite = document.getElementById("screen-write");
-  var $detailBody = document.getElementById("detail-body");
-  var $detailDate = document.getElementById("detail-date");
-  var $textarea = document.getElementById("write-textarea");
-  var $writeCharcount = document.getElementById("write-charcount");
-  var $detailCharcount = document.getElementById("detail-charcount");
-  var $confirmModal = document.getElementById("confirm-modal");
-  var $settingsModal = document.getElementById("settings-modal");
-  var $btnPrev = document.getElementById("btn-prev");
-  var $btnNext = document.getElementById("btn-next");
-  var $btnNewMemo = document.getElementById("btn-newmemo");
-  var $btnEdit = document.getElementById("btn-edit");
-  var $btnToList = document.getElementById("btn-tolist");
-  var $btnDelete = document.getElementById("btn-delete");
-  var $btnSave = document.getElementById("btn-save");
-  var $confirmYes = document.getElementById("confirm-yes");
-  var $confirmNo = document.getElementById("confirm-no");
-  var $settingsBtn = document.getElementById("settings-btn");
-  var $settingsClose = document.getElementById("settings-close");
+  var $list = byId("list-items"), $empty = byId("empty");
+  var $screenList = byId("screen-list"), $screenDetail = byId("screen-detail"), $screenWrite = byId("screen-write");
+  var $detailBody = byId("detail-body"), $detailDate = byId("detail-date");
+  var $textarea = byId("write-textarea");
+  var $writeCharcount = byId("write-charcount"), $detailCharcount = byId("detail-charcount");
+  var $confirmModal = byId("confirm-modal"), $settingsModal = byId("settings-modal");
+  var $btnPrev = byId("btn-prev"), $btnNext = byId("btn-next");
 
   function fmtDate(ts){
     var d = new Date(ts);
-    function p(n){ return (n<10?"0":"")+n; }
-    return d.getFullYear()+"."+p(d.getMonth()+1)+"."+p(d.getDate())+" "+p(d.getHours())+":"+p(d.getMinutes());
+    function p(n){ return (n < 10 ? "0" : "") + n; }
+    return d.getFullYear() + "." + p(d.getMonth() + 1) + "." + p(d.getDate()) + " " + p(d.getHours()) + ":" + p(d.getMinutes());
   }
 
   // 글자수 계산: 공백류, 마침표, 큰따옴표, 작은따옴표, 느낌표, 물음표 제외
-  function countChars(text){
-    if(!text) return 0;
-    return text.replace(/[\s.'"!?]/g, "").length;
-  }
-  function updateWriteCharcount(){
-    $writeCharcount.textContent = countChars($textarea.value) + "자";
-  }
-  function updateDetailCharcount(text){
-    $detailCharcount.textContent = countChars(text) + "자";
-  }
+  function countChars(text){ return text ? text.replace(/[\s.'"!?]/g, "").length : 0; }
+  function updateWriteCharcount(){ $writeCharcount.textContent = countChars($textarea.value) + "자"; }
 
   // ---------- render ----------
   function render(){
-    $screenList.classList.remove("active");
-    $screenDetail.classList.remove("active");
-    $screenWrite.classList.remove("active");
-
-    if(state.mode === "list"){
-      $screenList.classList.add("active");
-      renderList();
-    } else if(state.mode === "detail"){
-      $screenDetail.classList.add("active");
-      renderDetail();
-    } else if(state.mode === "write"){
-      $screenWrite.classList.add("active");
-    }
-
-    $settingsBtn.style.display = (state.mode === "write") ? "none" : "flex";
+    setActive($screenList, state.mode === "list");
+    setActive($screenDetail, state.mode === "detail");
+    setActive($screenWrite, state.mode === "write");
+    if(state.mode === "list") renderList();
+    else if(state.mode === "detail") renderDetail();
   }
 
   function renderList(){
-    var notes = sortedNotes();
-    var tp = totalPages();
+    var notes = sortedNotes(), tp = totalPages(), size = pageSize();
     if(state.page >= tp) state.page = tp - 1;
     if(state.page < 0) state.page = 0;
+    var pageNotes = notes.slice(state.page * size, state.page * size + size);
 
-    var start = state.page * PAGE_SIZE;
-    var pageNotes = notes.slice(start, start + PAGE_SIZE);
-
-    $pageIndicator.textContent = "";
     $btnPrev.disabled = state.page <= 0;
     $btnNext.disabled = state.page >= tp - 1;
 
     $list.innerHTML = "";
-    if(pageNotes.length === 0){
-      $empty.style.display = "flex";
-      return;
-    }
-    $empty.style.display = "none";
+    if(pageNotes.length === 0){ $empty.style.display = "flex"; $list.style.display = "none"; return; }
+    $empty.style.display = "none"; $list.style.display = "block";
 
-    pageNotes.forEach(function(note){
+    each(pageNotes, function(note){
       var div = document.createElement("div");
       div.className = "item";
-      var firstLine = (note.text || "").split("\n")[0] || "(내용 없음)";
-      div.innerHTML = '<div class="t"></div><div class="d"></div>';
-      div.querySelector(".t").textContent = firstLine;
-      div.querySelector(".d").textContent = fmtDate(note.updatedAt);
-      div.addEventListener("click", function(){
-        state.currentNoteId = note.id;
-        state.mode = "detail";
-        render();
-      });
+      var t = document.createElement("div"); t.className = "t";
+      t.textContent = (note.text || "").split("\n")[0] || "(내용 없음)";
+      var d = document.createElement("div"); d.className = "d";
+      d.textContent = fmtDate(note.updatedAt);
+      div.appendChild(t); div.appendChild(d);
+      div.addEventListener("click", function(){ state.currentNoteId = note.id; state.mode = "detail"; render(); });
       $list.appendChild(div);
     });
+    $list.scrollTop = 0;
   }
 
   function renderDetail(){
-    var note = state.notes.find(function(n){ return n.id === state.currentNoteId; });
+    var note = findNote(state.currentNoteId);
     if(!note){ goToList(); return; }
     $detailDate.textContent = fmtDate(note.updatedAt);
     $detailBody.textContent = note.text || "";
-    updateDetailCharcount(note.text || "");
+    $detailCharcount.textContent = countChars(note.text) + "자";
+    byId("detail").scrollTop = 0;
   }
 
   // ---------- actions ----------
-  function goToList(){
-    state.mode = "list";
-    state.page = 0;
-    closeConfirm();
-    render();
-  }
+  function goToList(){ state.mode = "list"; state.page = 0; closeConfirm(); render(); }
 
   function startEditCurrent(){
-    var note = state.notes.find(function(n){ return n.id === state.currentNoteId; });
+    var note = findNote(state.currentNoteId);
     if(!note) return;
     state.editingNoteId = note.id;
     $textarea.value = note.text || "";
-    state.mode = "write";
-    render();
-    updateWriteCharcount();
+    state.mode = "write"; render(); updateWriteCharcount();
     setTimeout(function(){ $textarea.focus(); }, 0);
   }
-
   function startNewNote(){
     state.editingNoteId = null;
     $textarea.value = "";
-    state.mode = "write";
-    render();
-    updateWriteCharcount();
+    state.mode = "write"; render(); updateWriteCharcount();
     setTimeout(function(){ $textarea.focus(); }, 0);
   }
+  function newId(){ return "n" + Date.now() + Math.random().toString(36).slice(2, 7); }
 
-  function saveAndExitWrite(){
-    var text = $textarea.value;
-    var hasContent = text.trim().length > 0;
-
-    if(state.editingNoteId){
-      var note = state.notes.find(function(n){ return n.id === state.editingNoteId; });
-      if(note){
-        if(hasContent){ note.text = text; note.updatedAt = Date.now(); }
-        else { state.notes = state.notes.filter(function(n){ return n.id !== state.editingNoteId; }); }
-      }
-      saveNotes();
-      if(hasContent){ state.mode = "detail"; state.currentNoteId = state.editingNoteId; }
-      else { goToList(); return; }
-    } else {
-      if(hasContent){
-        var id = "n" + Date.now() + Math.random().toString(36).slice(2,7);
-        state.notes.push({ id:id, text:text, updatedAt: Date.now() });
-        saveNotes();
-        state.mode = "list";
-        state.page = 0;
-      } else {
-        state.mode = "list";
-      }
-    }
-    render();
-  }
-
-  // Ctrl+S: 저장하고 상세보기 화면으로 이동 (새 글도 저장 후 해당 글 상세보기로)
+  // 저장하고 상세보기로 (새 글은 저장 후 그 글의 상세보기). 내용이 비어 있으면 저장하지 않고 목록으로.
   function saveToDetail(){
     var text = $textarea.value;
-    if(text.trim().length === 0){ saveAndExitWrite(); return; }
-
+    if(text.replace(/^\s+|\s+$/g, "").length === 0){
+      if(state.editingNoteId){ // 편집하다 전부 지우면 그 메모 삭제
+        var keep = [];
+        each(state.notes, function(n){ if(n.id !== state.editingNoteId) keep.push(n); });
+        state.notes = keep; saveNotes();
+      }
+      state.editingNoteId = null; goToList(); return;
+    }
     if(state.editingNoteId){
-      var note = state.notes.find(function(n){ return n.id === state.editingNoteId; });
+      var note = findNote(state.editingNoteId);
       if(note){ note.text = text; note.updatedAt = Date.now(); }
       state.currentNoteId = state.editingNoteId;
     } else {
-      var id = "n" + Date.now() + Math.random().toString(36).slice(2,7);
-      state.notes.push({ id:id, text:text, updatedAt: Date.now() });
+      var id = newId();
+      state.notes.push({ id: id, text: text, updatedAt: Date.now() });
       state.currentNoteId = id;
     }
     saveNotes();
-    state.editingNoteId = null;
-    state.mode = "detail";
-    render();
+    state.editingNoteId = null; state.mode = "detail"; render();
   }
 
-  function openConfirmDelete(){ state.confirmOpen = true; $confirmModal.classList.add("active"); }
-  function closeConfirm(){ state.confirmOpen = false; $confirmModal.classList.remove("active"); }
+  function openConfirmDelete(){ state.confirmOpen = true; addClass($confirmModal, "active"); }
+  function closeConfirm(){ state.confirmOpen = false; removeClass($confirmModal, "active"); }
   function confirmDeleteYes(){
-    state.notes = state.notes.filter(function(n){ return n.id !== state.currentNoteId; });
-    saveNotes();
-    closeConfirm();
-    goToList();
+    var keep = [];
+    each(state.notes, function(n){ if(n.id !== state.currentNoteId) keep.push(n); });
+    state.notes = keep; saveNotes(); closeConfirm(); goToList();
   }
+  function openSettings(){ state.settingsOpen = true; addClass($settingsModal, "active"); }
+  function closeSettings(){ state.settingsOpen = false; removeClass($settingsModal, "active"); }
 
-  // ---------- button bindings ----------
-  $btnNewMemo.addEventListener("click", startNewNote);
-  $btnPrev.addEventListener("click", function(){ if(state.page>0){ state.page--; renderList(); } });
-  $btnNext.addEventListener("click", function(){ if(state.page < totalPages()-1){ state.page++; renderList(); } });
-  $btnEdit.addEventListener("click", startEditCurrent);
-  $btnToList.addEventListener("click", goToList);
-  $btnDelete.addEventListener("click", openConfirmDelete);
-  $btnSave.addEventListener("click", saveAndExitWrite);
-  $confirmYes.addEventListener("click", confirmDeleteYes);
-  $confirmNo.addEventListener("click", closeConfirm);
+  // ---------- 버튼 연결 ----------
+  byId("btn-newmemo").addEventListener("click", startNewNote);
+  $btnPrev.addEventListener("click", function(){ if(state.page > 0){ state.page--; renderList(); } });
+  $btnNext.addEventListener("click", function(){ if(state.page < totalPages() - 1){ state.page++; renderList(); } });
+  byId("btn-edit").addEventListener("click", startEditCurrent);
+  byId("btn-tolist").addEventListener("click", goToList);
+  byId("btn-delete").addEventListener("click", openConfirmDelete);
+  byId("btn-save").addEventListener("click", saveToDetail);
+  byId("confirm-yes").addEventListener("click", confirmDeleteYes);
+  byId("confirm-no").addEventListener("click", closeConfirm);
   $textarea.addEventListener("input", updateWriteCharcount);
-
-  // settings modal
-  $settingsBtn.addEventListener("click", function(){
-    state.settingsOpen = true;
-    $settingsModal.classList.add("active");
-  });
-  $settingsClose.addEventListener("click", function(){
-    state.settingsOpen = false;
-    $settingsModal.classList.remove("active");
-  });
-  document.querySelectorAll("#fontsize-choices button").forEach(function(b){
+  byId("settings-close").addEventListener("click", closeSettings);
+  each(document.getElementsByClassName("tb-settings"), function(b){ b.addEventListener("click", openSettings); });
+  each(byId("fontsize-choices").getElementsByTagName("button"), function(b){
     b.addEventListener("click", function(){
-      settings.fontSize = parseInt(b.dataset.size, 10);
-      saveSettings(); applySettings();
+      settings.fontSize = parseInt(b.getAttribute("data-size"), 10);
+      saveSettings(); applySettings(); render();
     });
   });
-  document.querySelectorAll("#theme-choices button").forEach(function(b){
-    b.addEventListener("click", function(){
-      settings.theme = b.dataset.theme;
-      saveSettings(); applySettings();
-    });
+  each(byId("theme-choices").getElementsByTagName("button"), function(b){
+    b.addEventListener("click", function(){ settings.theme = b.getAttribute("data-theme"); saveSettings(); applySettings(); });
   });
 
-  // back button on write screen still saves (browser/device back)
-  window.addEventListener("popstate", function(){
-    if(state.mode === "write"){ saveAndExitWrite(); history.pushState({app:true}, ""); }
-  });
-  history.pushState({app:true}, "");
-
-  // Escape key also saves from write mode (desktop convenience)
-  document.addEventListener("keydown", function(e){
-    var isCtrlS = (e.ctrlKey || e.metaKey) && (e.key === "s" || e.key === "S" || e.key === "ㄴ");
-    // Esc는 Ctrl+S와 완전히 같은 기능만 수행 (기존 Esc 동작은 모두 제거)
-    if(isCtrlS || e.key === "Escape"){
-      e.preventDefault(); // Ctrl+S: 브라우저 '페이지 저장' 창 방지
-      if(state.mode === "write"){ saveToDetail(); }
-      else if(state.mode === "detail" && e.key === "Escape"){ goToList(); }
-    }
-    // 키보드 확대/축소(Ctrl + / - / 0) 차단
-    if((e.ctrlKey || e.metaKey) && (e.key === "+" || e.key === "=" || e.key === "-" || e.key === "_" || e.key === "0")){
-      e.preventDefault();
-    }
-  });
-
-  // Ctrl + 마우스 휠(및 트랙패드 핀치) 확대/축소 차단
-  window.addEventListener("wheel", function(e){
-    if(e.ctrlKey || e.metaKey){ e.preventDefault(); }
-  }, { passive:false, capture:true });
-  // 사파리/아이패드 핀치 제스처 차단
-  ["gesturestart","gesturechange","gestureend"].forEach(function(t){
-    document.addEventListener(t, function(e){ e.preventDefault(); }, { passive:false });
-  });
-
-  // ---------- fill entire viewport, any orientation, no letterboxing ----------
-  function fitScreen(){
-    var vh = (window.visualViewport ? window.visualViewport.height : window.innerHeight);
-    document.getElementById("phone").style.height = vh + "px";
+  // ---------- 뒤로가기(기기 뒤로가기 키/제스처) ----------
+  // 설정창/삭제확인 닫기 -> 작성 중이면 저장 후 상세보기 -> 상세보기면 목록 -> 목록이면 페이지에서 나감
+  function handleBack(){
+    if(state.settingsOpen){ closeSettings(); return true; }
+    if(state.confirmOpen){ closeConfirm(); return true; }
+    if(state.mode === "write"){ saveToDetail(); return true; }
+    if(state.mode === "detail"){ goToList(); return true; }
+    return false;
   }
-  fitScreen();
-  window.addEventListener("resize", fitScreen);
-  window.addEventListener("orientationchange", function(){ setTimeout(fitScreen, 100); });
-  if(window.visualViewport){ window.visualViewport.addEventListener("resize", fitScreen); }
+  try{ history.pushState({ app: 1 }, ""); }catch(e){}
+  window.addEventListener("popstate", function(){
+    if(handleBack()){ try{ history.pushState({ app: 1 }, ""); }catch(e){} }
+    else { try{ history.back(); }catch(e){} }
+  });
 
-  // ---------- fullscreen: 여백 더블탭/더블클릭으로만 켜고 끔 ----------
-  // Esc 등으로 의도치 않게 풀려도 다음 터치/클릭/키 입력 때 자동으로 다시 전체화면 복귀
-  var $outer = document.getElementById("phone-outer");
-  var wantFullscreen = false;   // 사용자가 전체화면을 "원하는" 상태인지
+  // 키보드가 연결된 경우: Ctrl+S / Esc 로 저장
+  document.addEventListener("keydown", function(e){
+    var k = keyOf(e);
+    var ctrlS = (e.ctrlKey || e.metaKey) && (k === "s" || k === "S");
+    if(ctrlS || k === "Escape" || k === "Esc"){
+      if(state.mode === "write"){ e.preventDefault(); saveToDetail(); }
+      else if(state.mode === "detail" && !ctrlS){ e.preventDefault(); goToList(); }
+      else if(ctrlS){ e.preventDefault(); }
+    }
+  });
 
+  // ---------- 전체화면: 빈 곳을 빠르게 두 번 탭하면 켜기/끄기 ----------
   function fsElement(){ return document.fullscreenElement || document.webkitFullscreenElement; }
-
-  function lockEscKey(){
-    // Chrome/Edge: 전체화면 중 Esc 키를 브라우저가 가로채지 않게 잠금
+  function toggleFullscreen(){
+    var el = document.documentElement;
     try{
-      if(navigator.keyboard && navigator.keyboard.lock){
-        navigator.keyboard.lock(["Escape"]).catch(function(){});
+      if(!fsElement()){
+        if(el.requestFullscreen) el.requestFullscreen();
+        else if(el.webkitRequestFullscreen) el.webkitRequestFullscreen();
+      } else {
+        if(document.exitFullscreen) document.exitFullscreen();
+        else if(document.webkitExitFullscreen) document.webkitExitFullscreen();
       }
     }catch(e){}
   }
-  function unlockEscKey(){
-    try{ if(navigator.keyboard && navigator.keyboard.unlock){ navigator.keyboard.unlock(); } }catch(e){}
-  }
-
-  function enterFullscreen(){
-    var el = document.documentElement;
-    var r;
-    try{
-      if(el.requestFullscreen){ r = el.requestFullscreen({ navigationUI:"hide" }); }
-      else if(el.webkitRequestFullscreen){ r = el.webkitRequestFullscreen(); }
-    }catch(e){}
-    if(r && r.then){ r.then(lockEscKey).catch(function(){}); }
-    else { lockEscKey(); }
-  }
-  function exitFullscreen(){
-    unlockEscKey();
-    if(document.exitFullscreen){ document.exitFullscreen().catch(function(){}); }
-    else if(document.webkitExitFullscreen){ document.webkitExitFullscreen(); }
-  }
-
-  function toggleFullscreen(){
-    if(wantFullscreen){
-      wantFullscreen = false;
-      if(fsElement()){ exitFullscreen(); }
-    } else {
-      wantFullscreen = true;
-      enterFullscreen();
-    }
-  }
-
-  function onFsChange(){
-    if(fsElement()){ lockEscKey(); }
-    // 풀렸는데 사용자가 끈 게 아니면(wantFullscreen 유지) → 다음 입력 때 자동 복귀
-  }
-  document.addEventListener("fullscreenchange", onFsChange);
-  document.addEventListener("webkitfullscreenchange", onFsChange);
-
-  // 전체화면 요청은 사용자 입력(터치/클릭/Esc 외 키) 안에서만 허용되므로,
-  // 풀린 뒤 첫 입력에서 바로 다시 요청한다.
-  function reenterIfNeeded(e){
-    if(wantFullscreen && !fsElement()){
-      if(e && e.type === "keydown" && e.key === "Escape") return; // Esc는 사용자 활성화로 인정 안 됨
-      enterFullscreen();
-    }
-  }
-  ["pointerdown","touchend","click","keydown"].forEach(function(t){
-    document.addEventListener(t, reenterIfNeeded, true);
-  });
-
-  document.body.addEventListener("dblclick", function(e){
-    if(e.target.closest(".item") || e.target.closest("button") || e.target.closest("textarea")) return;
-    toggleFullscreen();
-  });
   var lastTap = 0;
   document.body.addEventListener("touchend", function(e){
-    if(e.target.closest(".item") || e.target.closest("button") || e.target.closest("textarea")) return;
-    var now = Date.now();
-    if(now - lastTap < 350){ toggleFullscreen(); e.preventDefault(); }
-    lastTap = now;
+    if(isInteractive(e.target)) return;
+    var now = new Date().getTime();
+    if(now - lastTap < 350){ toggleFullscreen(); lastTap = 0; }
+    else { lastTap = now; }
   });
 
-  // ---------- init ----------
-  loadNotes();
-  loadSettings();
-  applySettings();
-  render();
+  // ---------- 시작 ----------
+  loadNotes(); loadSettings(); applySettings(); render();
 })();
 </script>
 </body>
