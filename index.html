@@ -193,6 +193,8 @@ html.light #settings-close{border:1px solid #fff;background:#fff;color:#000}
     if(e.key) return e.key;
     if(e.keyCode === 27) return "Escape";
     if(e.keyCode === 83) return "s";
+    if(e.keyCode >= 49 && e.keyCode <= 51) return String(e.keyCode - 48);
+    if(e.keyCode >= 97 && e.keyCode <= 99) return String(e.keyCode - 96);
     return "";
   }
 
@@ -393,6 +395,16 @@ html.light #settings-close{border:1px solid #fff;background:#fff;color:#000}
       else if(state.mode === "detail" && !ctrlS){ e.preventDefault(); goToList(); }
       else if(ctrlS){ e.preventDefault(); }
     }
+  });
+
+  // 숫자 단축키: 글 목록 화면에서만 (1 = 이전 페이지, 2 = 새 메모, 3 = 다음 페이지)
+  document.addEventListener("keydown", function(e){
+    if(state.mode !== "list" || state.settingsOpen || state.confirmOpen) return;
+    if(e.ctrlKey || e.metaKey || e.altKey) return;
+    var k = keyOf(e);
+    if(k === "1"){ e.preventDefault(); if(state.page > 0){ state.page--; renderList(); } }
+    else if(k === "2"){ e.preventDefault(); startNewNote(); }
+    else if(k === "3"){ e.preventDefault(); if(state.page < totalPages() - 1){ state.page++; renderList(); } }
   });
 
   // ---------- 전체화면: 빈 곳을 빠르게 두 번 탭하면 켜기/끄기 ----------
